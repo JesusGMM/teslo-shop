@@ -1,7 +1,7 @@
 import { PageNotFound } from '@/components';
 
 
-export default function category() {
+export default function notFound() {
 
 
   return (
