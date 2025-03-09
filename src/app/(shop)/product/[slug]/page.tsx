@@ -1,8 +1,12 @@
+import { Metadata, ResolvingMetadata } from 'next';
 import { notFound } from 'next/navigation';
 
-import { initialData } from '@/seed/seed';
+export const revalidate = 604800; //7 días 
+
 import { titleFont } from '@/config/fonts';
 import { ProductMobileSlideshow, ProductSlideshow, QuantitySelector, SizeSelector } from '@/components';
+import { getProductBySlug } from '@/actions';
+import { StockLabel } from '@/components/product/stock-label/StockLabel';
 
 interface Props {
   params: Promise<{
@@ -11,11 +15,34 @@ interface Props {
 }
 
 
+export async function generateMetadata({ params }: Props, parent: ResolvingMetadata): Promise<Metadata> {
+  // read route params
+  const { slug } = await params;
+
+  // fetch data
+  const product = await getProductBySlug(slug);
+
+  // optionally access and extend (rather than replace) parent metadata
+  // const previousImages = (await parent).openGraph?.images || []
+
+  return {
+    title: product?.title ?? "Producto no encontrado",
+    description: product?.description ?? "",
+    openGraph: {
+      title: product?.title ?? "Producto no encontrado",
+      description: product?.description ?? "",
+      // images: [], // https://misitioweb.com/products/image.png
+      images: [`/products/${product?.images[1]}`],
+    },
+  };
+}
+
+
 
 export default async function product({ params }: Props) {
 
   const { slug } = await params;
-  const product = initialData.products.find(product => product.slug === slug);
+  const product = await getProductBySlug(slug);
 
   if (!product) {
     notFound();
@@ -49,6 +76,7 @@ export default async function product({ params }: Props) {
       {/* Detalles */}
       <div className="col-span-1 px-5">
 
+        <StockLabel slug={product.slug} />
         <h1 className={` ${titleFont.className} antialiased font-bold text-xl`}>
           {product.title}
         </h1>
