@@ -1,12 +1,12 @@
-import { Metadata, ResolvingMetadata } from 'next';
-import { notFound } from 'next/navigation';
+export const revalidate = 604800; //7 días
+import { Metadata } from "next";
 
-export const revalidate = 604800; //7 días 
+import { notFound } from "next/navigation";
 
-import { titleFont } from '@/config/fonts';
-import { ProductMobileSlideshow, ProductSlideshow, QuantitySelector, SizeSelector } from '@/components';
-import { getProductBySlug } from '@/actions';
-import { StockLabel } from '@/components/product/stock-label/StockLabel';
+import { titleFont } from "@/config/fonts";
+import {  ProductMobileSlideshow,  ProductSlideshow, StockLabel } from "@/components";
+import { getProductBySlug } from "@/actions";
+import { AddToCart } from './ui/AddToCart';
 
 interface Props {
   params: Promise<{
@@ -15,7 +15,7 @@ interface Props {
 }
 
 
-export async function generateMetadata({ params }: Props, parent: ResolvingMetadata): Promise<Metadata> {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // read route params
   const { slug } = await params;
 
@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: Props, parent: ResolvingMetad
       title: product?.title ?? "Producto no encontrado",
       description: product?.description ?? "",
       // images: [], // https://misitioweb.com/products/image.png
-      images: [`/products/${product?.images[1]}`],
+      images: [ `/products/${ product?.images[1] }`],
     },
   };
 }
@@ -48,14 +48,10 @@ export default async function product({ params }: Props) {
     notFound();
   }
 
-
-
   return (
     <div className="mt-5 mb-20 grid grid-cols-1 md:grid-cols-3 gap-3">
-
       {/* Slideshow */}
       <div className="col-span-1 md:col-span-2 ">
-
         {/* Mobile Slideshow */}
         <ProductMobileSlideshow
           title={product.title}
@@ -69,45 +65,24 @@ export default async function product({ params }: Props) {
           images={product.images}
           className="hidden md:block"
         />
-
-
       </div>
 
       {/* Detalles */}
       <div className="col-span-1 px-5">
-
         <StockLabel slug={product.slug} />
+
         <h1 className={` ${titleFont.className} antialiased font-bold text-xl`}>
           {product.title}
         </h1>
+
         <p className="text-lg mb-5">${product.price}</p>
 
-        {/* Selector de Tallas */}
-        <SizeSelector
-          selectedSize={product.sizes[1]}
-          availableSizes={product.sizes}
-        />
-
-
-        {/* Selector de Cantidad */}
-        <QuantitySelector
-          quantity={2}
-        />
-
-
-        {/* Button */}
-        <button className="btn-primary my-5">
-          Agregar al carrito
-        </button>
+        <AddToCart product={ product } />
 
         {/* Descripción */}
         <h3 className="font-bold text-sm">Descripción</h3>
-        <p className="font-light">
-          {product.description}
-        </p>
-
+        <p className="font-light">{product.description}</p>
       </div>
-
     </div>
   );
 }
